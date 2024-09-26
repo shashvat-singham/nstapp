@@ -67,7 +67,7 @@ In this project we used a pre-trained "Arbitrary Neural Artistic Stylization Net
 
 2. Import this repository using git command
 ```
-git clone https://github.com/deepeshdm/Neural-Style-Transfer.git
+git clone https://github.com/shashvat-singham/NST-App.git
 ```
 3. Install all the required dependencies inside a virtual environment
 ```
