@@ -6,6 +6,12 @@ from io import BytesIO
 from API import transfer_style
 
 
+
+# Check if user is logged in
+if 'user' not in st.session_state:
+    st.warning("Please log in to access this page.")
+    st.stop()  # Stop execution if not logged in
+
 # Set page configs. Get emoji names from WebFx
 st.set_page_config(page_title="PixelMix - Style Transfer",
                    page_icon="./assets/favicon.png", layout="centered")
