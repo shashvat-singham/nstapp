@@ -6,9 +6,9 @@ from twilio.rest import Client  # Import Twilio client
 from API import transfer_style
 
 # Twilio credentials
-TWILIO_SID = 'ACe9c719bbea6c05333515b931ca9b53b8'
-TWILIO_AUTH_TOKEN = 'e496953defb0772342625be72fa054dc'
-TWILIO_PHONE_NUMBER = '+12096460609'
+TWILIO_SID = 'ACe9c719bbea6c05333515b931ca9b53b9'
+TWILIO_AUTH_TOKEN = 'e496953defb0772342625be72fa059dc'
+TWILIO_PHONE_NUMBER = '+12096460699'
 
 # Initialize Twilio client
 client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
