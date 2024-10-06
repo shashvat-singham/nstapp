@@ -94,7 +94,7 @@ st.title("Authentication System")
 st.header("Welcome to StyleGenix")
 
 # Navigation options
-option = st.selectbox("Select an option:", ["Sign In", "Register", "Forgot Password"])
+option = st.radio("Select an option:", ["Sign In", "Register", "Forgot Password"])
 
 if 'user' not in st.session_state:
     with st.form(key='auth_form'):
