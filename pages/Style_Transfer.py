@@ -279,20 +279,16 @@ STYLE_PRESETS = {
     "🎨 Vibrant Swirls": "./assets/styles/vibrant.png",
 }
 
-col1, col_op, col2 = st.columns([5, 1, 5])
 content_bytes = None
 style_bytes = None
 
-with col1:
+# --- Controls row (uploader + style selector) ---
+ctl1, ctl2 = st.columns(2)
+with ctl1:
     content_file = st.file_uploader("Content image (PNG / JPG)", type=['png', 'jpg', 'jpeg'])
     if content_file is not None:
         content_bytes = content_file.getvalue()
-        preview_card(Image.open(BytesIO(content_bytes)), "Content")
-
-with col_op:
-    st.markdown('<div class="sg-op">+</div>', unsafe_allow_html=True)
-
-with col2:
+with ctl2:
     style_source = st.radio(
         "Style", ["Preset paintings", "Upload your own"],
         horizontal=True, label_visibility="collapsed",
@@ -306,8 +302,19 @@ with col2:
         preset_name = st.selectbox("Choose a style", list(STYLE_PRESETS.keys()))
         with open(STYLE_PRESETS[preset_name], "rb") as f:
             style_bytes = f.read()
-    if style_bytes is not None:
-        preview_card(Image.open(BytesIO(style_bytes)), "Style")
+
+# --- Aligned previews row (both start at the same height) ---
+if content_bytes is not None or style_bytes is not None:
+    pv1, pv_op, pv2 = st.columns([5, 1, 5])
+    with pv1:
+        if content_bytes is not None:
+            preview_card(Image.open(BytesIO(content_bytes)), "Content")
+    with pv_op:
+        if content_bytes is not None and style_bytes is not None:
+            st.markdown('<div class="sg-op">+</div>', unsafe_allow_html=True)
+    with pv2:
+        if style_bytes is not None:
+            preview_card(Image.open(BytesIO(style_bytes)), "Style")
 
 qcol1, qcol2 = st.columns([2, 3])
 with qcol1:
