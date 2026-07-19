@@ -272,22 +272,42 @@ with st.sidebar:
 # ---------------------------------------------------------------------------
 st.markdown('<div class="sg-step"><span class="n">1</span> Upload your images</div>', unsafe_allow_html=True)
 
+STYLE_PRESETS = {
+    "🌻 Monet — Poppies": "./assets/styles/monet.jpg",
+    "💧 Water Drops": "./assets/styles/water.jpg",
+    "🪨 Sandstone Swirls": "./assets/styles/sandstone.jpg",
+    "🎨 Vibrant Swirls": "./assets/styles/vibrant.png",
+}
+
 col1, col_op, col2 = st.columns([5, 1, 5])
-content_file = None
-style_file = None
+content_bytes = None
+style_bytes = None
 
 with col1:
     content_file = st.file_uploader("Content image (PNG / JPG)", type=['png', 'jpg', 'jpeg'])
     if content_file is not None:
-        preview_card(Image.open(content_file), "Content")
+        content_bytes = content_file.getvalue()
+        preview_card(Image.open(BytesIO(content_bytes)), "Content")
 
 with col_op:
     st.markdown('<div class="sg-op">+</div>', unsafe_allow_html=True)
 
 with col2:
-    style_file = st.file_uploader("Style image (PNG / JPG)", type=['png', 'jpg', 'jpeg'])
-    if style_file is not None:
-        preview_card(Image.open(style_file), "Style")
+    style_source = st.radio(
+        "Style", ["Preset paintings", "Upload your own"],
+        horizontal=True, label_visibility="collapsed",
+    )
+    if style_source == "Upload your own":
+        style_file = st.file_uploader("Style image (PNG / JPG)", type=['png', 'jpg', 'jpeg'])
+        if style_file is not None:
+            style_bytes = style_file.getvalue()
+        st.caption("Tip: works best with a painting/artwork, not a logo or screenshot.")
+    else:
+        preset_name = st.selectbox("Choose a style", list(STYLE_PRESETS.keys()))
+        with open(STYLE_PRESETS[preset_name], "rb") as f:
+            style_bytes = f.read()
+    if style_bytes is not None:
+        preview_card(Image.open(BytesIO(style_bytes)), "Style")
 
 qcol1, qcol2 = st.columns([2, 3])
 with qcol1:
@@ -307,11 +327,8 @@ st.info('Tip: use a **painting / artwork** as the Style image for the best resul
 # ---------------------------------------------------------------------------
 # Result section
 # ---------------------------------------------------------------------------
-if content_file is not None and style_file is not None:
+if content_bytes is not None and style_bytes is not None:
     st.markdown('<div class="sg-step"><span class="n">2</span> Your artwork</div>', unsafe_allow_html=True)
-
-    content_bytes = content_file.getvalue()
-    style_bytes = style_file.getvalue()
 
     with st.spinner("🎨 Styling your image... (first run warms up the model)"):
         styled_image = stylize(content_bytes, style_bytes, max_dim)
