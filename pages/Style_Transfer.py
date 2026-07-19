@@ -2,30 +2,34 @@ import streamlit as st
 from PIL import Image
 import numpy as np
 from io import BytesIO
-from twilio.rest import Client  # Import Twilio client
-from API import transfer_style
+
+# NOTE: TensorFlow / TF-Hub (via API.py) and Twilio are imported lazily inside
+# the functions that need them. Importing TensorFlow at module load made this
+# page take many seconds to open; deferring it keeps navigation instant.
 
 # Twilio credentials
 TWILIO_SID = 'ACe9c719bbea6c05333515b931ca9b53b9'
 TWILIO_AUTH_TOKEN = 'e496953defb0772342625be72fa059dc'
 TWILIO_PHONE_NUMBER = '+12096460699'
 
-# Initialize Twilio client
-client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
 
 def send_sms(to, message):
+    from twilio.rest import Client  # lazy import
+    client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
     client.messages.create(
         body=message,
         from_=TWILIO_PHONE_NUMBER,
         to=to
     )
 
+
 # Function to handle logout
 def logout():
     if 'user' in st.session_state:
         del st.session_state['user']  # Remove user session
     st.session_state['redirect_to_auth'] = True  # Set a flag for redirect
-    st.rerun() # Refresh to apply changes
+    st.rerun()  # Refresh to apply changes
+
 
 # Check for redirect to authentication
 if 'redirect_to_auth' in st.session_state and st.session_state['redirect_to_auth']:
@@ -103,58 +107,61 @@ with col1:
     if content_image is not None:
         # Display the uploaded content image
         content_img = Image.open(content_image)
-        st.image(content_img, caption="Uploaded Content Image", use_column_width=True)
-  
+        st.image(content_img, caption="Uploaded Content Image", use_container_width=True)
+
 with col2:
     style_image = st.file_uploader("Upload Style Image (PNG & JPG images only)", type=['png', 'jpg'])
     if style_image is not None:
         # Display the uploaded style image
         style_img = Image.open(style_image)
-        st.image(style_img, caption="Uploaded Style Image", use_column_width=True)
+        st.image(style_img, caption="Uploaded Style Image", use_container_width=True)
 
 st.markdown("</br>", unsafe_allow_html=True)
-st.warning('NOTE: You need at least Intel i3 with 8GB memory for proper functioning of this application. ' +
-   'Images greater than (2000x2000) are resized to (1000x1000).')
+st.info('NOTE: Large images are automatically downscaled for faster styling. '
+        'The first run may take a little longer while the model warms up.')
 
 # Add a phone number input for SMS notification
-user_phone_number = st.text_input("Enter your phone number for SMS notification:", placeholder="+1234567890")
+user_phone_number = st.text_input("Enter your phone number for SMS notification (optional):", placeholder="+1234567890")
 
 if content_image is not None and style_image is not None:
-    with st.spinner("Styling Images...will take about 20-30 secs"):
-        content_image = Image.open(content_image)
-        style_image = Image.open(style_image)
+    with st.spinner("🎨 Styling your image... (first run warms up the model)"):
+        from API import transfer_style  # lazy import (loads TensorFlow only now)
 
-        # Convert PIL Image to numpy array
-        content_image = np.array(content_image)
-        style_image = np.array(style_image)
+        # Convert to RGB so PNGs with alpha channels don't break the model.
+        content_arr = np.array(Image.open(content_image).convert("RGB"))
+        style_arr = np.array(Image.open(style_image).convert("RGB"))
 
         # Path of the pre-trained TF model
         model_path = r"model"
 
         # Output image
-        styled_image = transfer_style(content_image, style_image, model_path)
-        if style_image is not None:
-            st.balloons()
+        styled_image = transfer_style(content_arr, style_arr, model_path)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(styled_image)
-        with col2:
-            st.markdown("</br>", unsafe_allow_html=True)
-            st.markdown("<b>Your Image is Ready! Click below to download it.</b>", unsafe_allow_html=True)
+    st.balloons()
 
-            # De-normalize the image
-            styled_image = (styled_image * 255).astype(np.uint8)
-            img = Image.fromarray(styled_image)
-            buffered = BytesIO()
-            img.save(buffered, format="JPEG")
-            st.download_button(
-                label="Download image",
-                data=buffered.getvalue(),
-                file_name="output.png",
-                mime="image/png"
-            )
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(styled_image, caption="Styled Result", use_container_width=True)
+    with col2:
+        st.markdown("</br>", unsafe_allow_html=True)
+        st.markdown("<b>Your Image is Ready! Click below to download it.</b>", unsafe_allow_html=True)
 
-            # Send SMS notification if a phone number is provided
-            if user_phone_number:
+        # De-normalize the image
+        styled_image = (styled_image * 255).astype(np.uint8)
+        img = Image.fromarray(styled_image)
+        buffered = BytesIO()
+        img.save(buffered, format="JPEG")
+        st.download_button(
+            label="Download image",
+            data=buffered.getvalue(),
+            file_name="output.png",
+            mime="image/png"
+        )
+
+        # Send SMS notification if a phone number is provided
+        if user_phone_number:
+            try:
                 send_sms(user_phone_number, "Your styled image is ready for download!")
+                st.toast("SMS notification sent!")
+            except Exception as e:
+                st.caption(f"(SMS not sent: {e})")
