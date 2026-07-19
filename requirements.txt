@@ -6,4 +6,3 @@ Pillow
 tensorflow-cpu
 tensorflow-hub
 pyrebase4
-twilio

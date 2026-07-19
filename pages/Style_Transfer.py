@@ -3,24 +3,9 @@ from PIL import Image
 import numpy as np
 from io import BytesIO
 
-# NOTE: TensorFlow / TF-Hub (via API.py) and Twilio are imported lazily inside
-# the functions that need them. Importing TensorFlow at module load made this
-# page take many seconds to open; deferring it keeps navigation instant.
-
-# Twilio credentials
-TWILIO_SID = 'ACe9c719bbea6c05333515b931ca9b53b9'
-TWILIO_AUTH_TOKEN = 'e496953defb0772342625be72fa059dc'
-TWILIO_PHONE_NUMBER = '+12096460699'
-
-
-def send_sms(to, message):
-    from twilio.rest import Client  # lazy import
-    client = Client(TWILIO_SID, TWILIO_AUTH_TOKEN)
-    client.messages.create(
-        body=message,
-        from_=TWILIO_PHONE_NUMBER,
-        to=to
-    )
+# NOTE: TensorFlow / TF-Hub (via API.py) is imported lazily inside the block
+# that needs it. Importing TensorFlow at module load made this page take many
+# seconds to open; deferring it keeps navigation instant.
 
 
 # Function to handle logout
@@ -120,9 +105,6 @@ st.markdown("</br>", unsafe_allow_html=True)
 st.info('NOTE: Large images are automatically downscaled for faster styling. '
         'The first run may take a little longer while the model warms up.')
 
-# Add a phone number input for SMS notification
-user_phone_number = st.text_input("Enter your phone number for SMS notification (optional):", placeholder="+1234567890")
-
 if content_image is not None and style_image is not None:
     with st.spinner("🎨 Styling your image... (first run warms up the model)"):
         from API import transfer_style  # lazy import (loads TensorFlow only now)
@@ -157,11 +139,3 @@ if content_image is not None and style_image is not None:
             file_name="output.png",
             mime="image/png"
         )
-
-        # Send SMS notification if a phone number is provided
-        if user_phone_number:
-            try:
-                send_sms(user_phone_number, "Your styled image is ready for download!")
-                st.toast("SMS notification sent!")
-            except Exception as e:
-                st.caption(f"(SMS not sent: {e})")
