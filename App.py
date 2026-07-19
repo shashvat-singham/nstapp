@@ -198,6 +198,9 @@ def sign_in(email, password):
     try:
         user = auth.sign_in_with_email_and_password(email, password)
         st.session_state['user'] = user['idToken']
+        st.session_state['id_token'] = user['idToken']
+        st.session_state['uid'] = user['localId']
+        st.session_state['email'] = email
         return True
     except Exception as e:
         st.error(f"Error during sign in: {e}")
