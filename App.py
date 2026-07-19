@@ -133,7 +133,7 @@ if 'user' not in st.session_state:
 
 else:
     # If logged in, redirect to App.py
-    st.switch_page("pages/App.py")
+    st.switch_page("pages/Style_Transfer.py")
 
 st.markdown("---")
 st.markdown("Made with ❤️ by StyleGenix")
