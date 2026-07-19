@@ -1,6 +1,8 @@
-numpy==1.19.5
-opencv-python-headless==4.5.5.62
-Pillow==8.4.0
-streamlit==1.5.0
-tensorflow==2.7.0
-tensorflow-hub==0.12.0
+streamlit>=1.31.0
+numpy<2.0
+opencv-python-headless
+Pillow
+tensorflow-cpu
+tensorflow-hub
+pyrebase4
+twilio
