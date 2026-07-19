@@ -126,6 +126,9 @@ div[role="radiogroup"] > label:has(input:checked) {
 
 .stAlert { border-radius: 14px; }
 
+/* Hide the "Press Enter to submit form" hint under inputs */
+[data-testid="InputInstructions"] { display: none; }
+
 .sg-section {
     font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.15rem;
     color: #f1f5f9; margin: .2rem 0 .6rem;
