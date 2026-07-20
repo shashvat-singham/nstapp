@@ -26,8 +26,15 @@ firebase_config = {
 
 
 @st.cache_resource(show_spinner=False)
-def get_db():
-    return pyrebase.initialize_app(firebase_config).database()
+def get_db(db_url):
+    # db_url is part of the cache key, so changing the URL rebuilds the client.
+    cfg = dict(firebase_config)
+    cfg["databaseURL"] = db_url
+    return pyrebase.initialize_app(cfg).database()
+
+
+def db():
+    return get_db(firebase_config["databaseURL"])
 
 
 def _auth():
@@ -52,7 +59,7 @@ def save_creation(content_img, style_img, result_img):
     if not uid:
         return False, "Please log out and sign in again to enable saving."
     try:
-        get_db().child("users").child(uid).child("creations").push(
+        db().child("users").child(uid).child("creations").push(
             {
                 "content": _thumb_b64(content_img),
                 "style": _thumb_b64(style_img),
@@ -72,7 +79,7 @@ def load_creations():
     if not uid:
         return [], "not-logged-in"
     try:
-        snap = get_db().child("users").child(uid).child("creations").get(token)
+        snap = db().child("users").child(uid).child("creations").get(token)
         items = [c.val() for c in (snap.each() or [])]
         return list(reversed(items)), None
     except Exception as e:
