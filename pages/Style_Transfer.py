@@ -123,6 +123,9 @@ footer {visibility: hidden;}
 [data-testid="stHeader"] {background: transparent;}
 [data-testid="stDecoration"] {display: none;}
 [data-testid="InputInstructions"] {display: none;}
+[data-testid="stToolbar"] a[href*="github"],
+[data-testid="stToolbarActions"] a[href*="github"],
+header a[href*="github"] { display: none !important; }
 
 html, body, [class*="css"], .stMarkdown, p, span, label, input, div {
     font-family: 'Poppins', sans-serif;
