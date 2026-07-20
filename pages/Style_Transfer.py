@@ -67,16 +67,16 @@ def save_creation(content_img, style_img, result_img):
 
 
 def load_creations():
-    """Return this user's creations, newest first."""
+    """Return (creations newest-first, error_string_or_None)."""
     uid, token = _auth()
     if not uid:
-        return []
+        return [], "not-logged-in"
     try:
         snap = get_db().child("users").child(uid).child("creations").get(token)
         items = [c.val() for c in (snap.each() or [])]
-        return list(reversed(items))
-    except Exception:
-        return []
+        return list(reversed(items)), None
+    except Exception as e:
+        return [], str(e)
 
 
 @st.cache_data(show_spinner=False)
@@ -358,7 +358,7 @@ if content_bytes is not None and style_bytes is not None:
             st.balloons()
             st.toast("Saved to your gallery ✅")
         elif err:
-            st.caption(f"(Could not save to Firebase: {err})")
+            st.warning(f"Could not save to Firebase: {err}")
 
     _, mid, _ = st.columns([1, 3, 1])
     with mid:
@@ -381,8 +381,17 @@ if content_bytes is not None and style_bytes is not None:
 # My Creations gallery (from Firebase)
 # ---------------------------------------------------------------------------
 st.markdown('<div class="sg-step">🖼️ My Creations</div>', unsafe_allow_html=True)
-creations = load_creations()
-if not creations:
+creations, load_err = load_creations()
+if load_err == "not-logged-in":
+    st.warning("Please log out and sign in again to load your saved gallery.")
+elif load_err:
+    st.error(f"Couldn't reach the Firebase Realtime Database: {load_err}")
+    st.caption(
+        f"databaseURL in use: {firebase_config['databaseURL']} — make sure a Realtime "
+        "Database exists in the Firebase console, that this URL matches it exactly, and "
+        "that the rules allow authenticated users to read/write users/$uid."
+    )
+elif not creations:
     st.caption("No saved creations yet — style an image and it will appear here.")
 else:
     st.caption(f"{len(creations)} saved artwork(s) in your account.")
