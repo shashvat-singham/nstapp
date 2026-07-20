@@ -21,7 +21,7 @@ firebase_config = {
     "messagingSenderId": "835045766386",
     "appId": "1:835045766386:web:3fe54f2c171b1fa303cc6b",
     "measurementId": "G-LX246R50J9",
-    "databaseURL": "https://stylegenix-b8eed.firebaseio.com",
+    "databaseURL": "https://stylegenix-b8eed-default-rtdb.firebaseio.com",
 }
 
 
